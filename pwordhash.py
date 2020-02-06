@@ -1,24 +1,52 @@
 # some code taken from https://nitratine.net/blog/post/how-to-hash-passwords-in-python/
 import hashlib
-import os
+import pymysql.cursors
+import uuid
+
+# Connect to the database
+connection = pymysql.connect(host='mrbartucz.com',
+                             user='hp1617wy',
+                             password='Arp182019',
+                             db='hp1617wy',
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
 
 # declarations
-users = {}
-
 username = 'rad_dude420'
-password = 'p455w0rd'
+password = '0th3rp455w0rdzz'
 
-salt = os.urandom(32)
+salt = uuid.uuid4()
+salt = repr(salt.hex)
 
 # generate hash
-key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+hashpass = hashlib.sha256(salt.encode() + password.encode()).hexdigest()
+
+print(username)
+print(salt)
+print(password)
+print(hashpass)
+
+sql = "INSERT INTO salt (hash, username, salt) VALUES (%s, %s,%s)"
+to_sql = (hashpass, username, salt)
+connection.commit()
+
+
+
+
+
+
+
+
+
+'''#following code for test purposes only
+#users = {}
 
 #storage
-users[username] = { 'salt': salt, 'key': key}
+#users[username] = { 'salt': salt, 'hashpass': hashpass}
 
 #retrieval
-#salt_from_storage = storage[:32]
-#key_from_storage = storage[32:]
+salt_from_storage = storage[:32]
+key_from_storage = storage[32:]
 
 # Verification attempt 1 (incorrect password)
 username = 'rad_dude420'
@@ -60,4 +88,4 @@ salt = users[username]['salt']
 key = users[username]['key']
 new_key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
 
-assert key == new_key # The keys are the same thus the passwords were the same for this user also
+assert key == new_key # The keys are the same thus the passwords were the same for this user also'''
