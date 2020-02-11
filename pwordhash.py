@@ -2,6 +2,7 @@
 import hashlib
 import pymysql.cursors
 import uuid
+import re
 
 # Connect to the database
 connection = pymysql.connect(host='mrbartucz.com',
@@ -12,24 +13,44 @@ connection = pymysql.connect(host='mrbartucz.com',
                              cursorclass=pymysql.cursors.DictCursor)
 
 # declarations
-username = 'rad_dude420'
-password = '0th3rp455w0rdzz'
+username = input("Enter Username: ")
+password = input("Enter Password: ")
 
-salt = uuid.uuid4()
-salt = repr(salt.hex)
+salt = uuid.uuid4().hex
+print(salt)
 
 # generate hash
 hashpass = hashlib.sha256(salt.encode() + password.encode()).hexdigest()
-
-print(username)
-print(salt)
-print(password)
 print(hashpass)
 
-sql = "INSERT INTO salt (hash, username, salt) VALUES (%s, %s,%s)"
-to_sql = (hashpass, username, salt)
-connection.commit()
+#send to database
+try:
+    with connection.cursor() as cursor:
+        sql = "INSERT INTO salt (hash, username, salt) VALUES (%s, %s, %s)"
+        to_sql = (hashpass, username, salt)
+        cursor.execute(sql, to_sql)
+        connection.commit()
+        
+        sql_query = "SELECT hash, salt FROM salt WHERE username = %s"
+        cursor.execute(sql_query, username)
+        
+        for result in cursor:
+            returnHash = result['hash']
+            returnSalt = result['salt']
+            print(returnSalt)
+            print(returnHash)
+        
+        reEnteredPassword = input("Enter password again: ")
+        reHashedPassword = hashlib.sha256(returnSalt.encode() + reEnteredPassword.encode()).hexdigest()
+        print(reHashedPassword)
 
+    if returnHash == (reHashedPassword):
+        print("Got it.")
+    else:
+        print("Wrong! Drat.")
+
+finally:
+    connection.close()
 
 
 
@@ -39,6 +60,14 @@ connection.commit()
 
 
 '''#following code for test purposes only
+
+print(username)
+print(salt)
+print(password)
+print(hashpass)
+print(sql)
+print(to_sql)
+
 #users = {}
 
 #storage
