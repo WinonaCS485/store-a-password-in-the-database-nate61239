@@ -17,11 +17,11 @@ username = input("Enter Username: ")
 password = input("Enter Password: ")
 
 salt = uuid.uuid4().hex
-print(salt)
+#print(salt)
 
 # generate hash
 hashpass = hashlib.sha256(salt.encode() + password.encode()).hexdigest()
-print(hashpass)
+#print(hashpass)
 
 #send to database
 try:
@@ -37,12 +37,12 @@ try:
         for result in cursor:
             returnHash = result['hash']
             returnSalt = result['salt']
-            print(returnSalt)
-            print(returnHash)
+            #print(returnSalt)
+            #print(returnHash)
         
         reEnteredPassword = input("Enter password again: ")
         reHashedPassword = hashlib.sha256(returnSalt.encode() + reEnteredPassword.encode()).hexdigest()
-        print(reHashedPassword)
+        #print(reHashedPassword)
 
     if returnHash == (reHashedPassword):
         print("Got it.")
